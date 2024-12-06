@@ -27,6 +27,15 @@ private_keyECC2048 = ec.generate_private_key(
 public_keyECC2048 = private_keyECC2048.public_key()
 afterECC2048 = time.perf_counter()
 
+
+beforeECC3072= time.perf_counter()
+private_keyECC3072= ec.generate_private_key(
+    ec.SECP192R1()
+)
+
+public_keyECC3072 = private_keyECC3072.public_key()
+afterECC3072= time.perf_counter()
+
 beforeECC7680 = time.perf_counter()
 private_keyECC7680 = ec.generate_private_key(
     ec.SECP192R1()
@@ -68,6 +77,14 @@ signatureECC2048 = private_keyECC2048.sign(
 )
 afterECCSIGN2048 = time.perf_counter()
 
+beforeECCSIGN3072 = time.perf_counter()
+# We can sign the message using "hash-then-sign".
+signatureECC3072 = private_keyECC3072.sign(
+    message,
+    ec.ECDSA(hashes.SHA256())
+)
+afterECCSIGN3072 = time.perf_counter()
+
 beforeECCSIGN7680 = time.perf_counter()
 # We can sign the message using "hash-then-sign".
 signatureECC7680 = private_keyECC7680.sign(
@@ -107,6 +124,14 @@ public_keyECC2048.verify(
     ec.ECDSA(hashes.SHA256())
 )
 afterECCVERIFY2048 = time.perf_counter()
+
+beforeECCVERIFY3072= time.perf_counter()
+public_keyECC3072.verify(
+    signatureECC3072,
+    message,
+    ec.ECDSA(hashes.SHA256())
+)
+afterECCVERIFY3072 = time.perf_counter()
 
 beforeECCVERIFY7680 = time.perf_counter()
 public_keyECC7680.verify(
@@ -252,6 +277,15 @@ private_key2048 = rsa.generate_private_key(
 
 after2048 = time.perf_counter()
 
+before3072 = time.perf_counter()
+
+private_key3072 = rsa.generate_private_key(
+    public_exponent=65537,
+    key_size=3072
+)
+
+after3072 = time.perf_counter()
+
 before7680 = time.perf_counter()
 
 private_key7680 = rsa.generate_private_key(
@@ -287,6 +321,7 @@ after15360 = time.perf_counter()
 
 public_key1024= private_key1024.public_key()
 public_key2048= private_key2048.public_key()
+public_key3072= private_key3072.public_key()
 public_key7680 = private_key7680.public_key()
 public_key15360 = private_key15360.public_key()
 #
@@ -318,6 +353,17 @@ signatureRSA2048 = private_key2048.sign(
     hashes.SHA256()
 )
 afterRSASIGN2048 = time.perf_counter()
+
+beforeRSASIGN3072 = time.perf_counter()
+signatureRSA3072 = private_key3072.sign(
+    message,
+    padding.PSS(
+        mgf=padding.MGF1(hashes.SHA256()),
+        salt_length=padding.PSS.MAX_LENGTH
+    ),
+    hashes.SHA256()
+)
+afterRSASIGN3072 = time.perf_counter()
 
 beforeRSASIGN7680 = time.perf_counter()
 signatureRSA7680 = private_key7680.sign(
@@ -371,6 +417,18 @@ public_key2048.verify(
 )
 afterRSAVERIFY2048 = time.perf_counter()
 
+beforeRSAVERIFY3072 = time.perf_counter()
+public_key3072.verify(
+    signatureRSA3072,
+    message,
+    padding.PSS(
+        mgf=padding.MGF1(hashes.SHA256()),
+        salt_length=padding.PSS.MAX_LENGTH
+    ),
+    hashes.SHA256()
+)
+afterRSAVERIFY3072 = time.perf_counter()
+
 beforeRSAVERIFY7680 = time.perf_counter()
 public_key7680.verify(
     signatureRSA7680,
@@ -411,6 +469,10 @@ public_key_str1024 = public_key1024.public_bytes(
    format=serialization.PublicFormat.PKCS1
 )
 public_key_str2048 = public_key2048.public_bytes(
+   encoding=serialization.Encoding.PEM,
+   format=serialization.PublicFormat.PKCS1
+)
+public_key_str3072 = public_key3072.public_bytes(
    encoding=serialization.Encoding.PEM,
    format=serialization.PublicFormat.PKCS1
 )
@@ -465,6 +527,7 @@ def decrypt_message(private_key, encrypted_chunks):
 #Keypair generation for RSA
 print(f"{after1024 - before1024:0.4f} seconds for 80 Bytes RSA")
 print(f"{after2048 - before2048:0.4f} seconds for 112 Bytes RSA")
+print(f"{after3072 - before3072:0.4f} seconds for 128 Bytes RSA")
 print(f"{after7680 - before7680:0.4f} seconds for 192 Bytes RSA")
 print(f"{after15360 - before15360:0.4f} seconds for 256 Bytes RSA")
 
@@ -476,12 +539,14 @@ print(f"{afterDSA2048 - beforeDSA2048:0.4f} seconds for 112 Bytes DSA")
 #RSA SIGNATURE 
 print(f"{afterRSASIGN1024 - beforeRSASIGN1024:0.4f} seconds for 80 Bytes RSA to sign")
 print(f"{afterRSASIGN2048 - beforeRSASIGN2048:0.4f} seconds for 112 Bytes RSA to sign")
+print(f"{afterRSASIGN3072 - beforeRSASIGN3072:0.4f} seconds for 128 Bytes RSA to sign")
 print(f"{afterRSASIGN7680 - beforeRSASIGN7680:0.4f} seconds for 192 Bytes RSA to sign")
 print(f"{afterRSASIGN15360 - beforeRSASIGN15360:0.4f} seconds for 256 Bytes RSA to sign")
 
 #RSA VERIFY
 print(f"{afterRSAVERIFY1024 - beforeRSAVERIFY1024:0.4f} seconds for 80 Bytes RSA to verify signature")
 print(f"{afterRSAVERIFY2048 - beforeRSAVERIFY2048:0.4f} seconds for 112 Bytes RSA to verify signature")
+print(f"{afterRSAVERIFY3072 - beforeRSAVERIFY3072:0.4f} seconds for 128 Bytes RSA to verify signature")
 print(f"{afterRSAVERIFY7680 - beforeRSAVERIFY7680:0.4f} seconds for 192 Bytes RSA to verify signature")
 print(f"{afterRSAVERIFY15360 - beforeRSAVERIFY15360:0.4f} seconds for 256 Bytes RSA to verify signature")
 
@@ -497,18 +562,21 @@ print(f"{afterDSAVERIFY2048 - beforeDSAVERIFY2048:0.4f} seconds for 112 Bytes DS
 #Keypair generation for ECC
 print(f"{afterECC1024 - beforeECC1024:0.4f} seconds for 80 Bytes ECC")
 print(f"{afterECC2048 - beforeECC2048:0.4f} seconds for 112 Bytes ECC")
+print(f"{afterECC3072 - beforeECC3072:0.4f} seconds for 128 Bytes ECC")
 print(f"{afterECC7680 - beforeECC7680:0.4f} seconds for 192 Bytes ECC")
 print(f"{afterECC15360 - beforeECC15360:0.4f} seconds for 256 Bytes ECC")
 
 #ECC SIGNATURE 
 print(f"{afterECCSIGN1024 - beforeECCSIGN1024:0.4f} seconds for 80 Bytes ECC to sign")
 print(f"{afterECCSIGN2048 - beforeECCSIGN2048:0.4f} seconds for 112 Bytes ECC to sign")
+print(f"{afterECCSIGN3072 - beforeECCSIGN3072:0.4f} seconds for 128 Bytes ECC to sign")
 print(f"{afterECCSIGN7680 - beforeECCSIGN7680:0.4f} seconds for 192 Bytes ECC to sign")
 print(f"{afterECCSIGN15360 - beforeECCSIGN15360:0.4f} seconds for 256 Bytes ECC to sign")
 
 #ECC VERIFY
 print(f"{afterECCVERIFY1024 - beforeECCVERIFY1024:0.4f} seconds for 80 Bytes ECC to verify signature")
 print(f"{afterECCVERIFY2048 - beforeECCVERIFY2048:0.4f} seconds for 112 Bytes ECC to verify signature")
+print(f"{afterECCVERIFY3072 - beforeECCVERIFY3072:0.4f} seconds for 128 Bytes ECC to verify signature")
 print(f"{afterECCVERIFY7680 - beforeECCVERIFY7680:0.4f} seconds for 192 Bytes ECC to verify signature")
 print(f"{afterECCVERIFY15360 - beforeECCVERIFY15360:0.4f} seconds for 256 Bytes ECC to verify signature")
 
@@ -521,6 +589,10 @@ after1024E = time.perf_counter()
 before2048E = time.perf_counter()
 long_ciphertext2048 = encrypt_message(public_key2048, long_plaintext, 32)
 after2048E = time.perf_counter()
+
+before3072E = time.perf_counter()
+long_ciphertext3072 = encrypt_message(public_key3072, long_plaintext, 32)
+after3072E = time.perf_counter()
 
 before7680E = time.perf_counter()
 long_ciphertext7680 = encrypt_message(public_key7680, long_plaintext, 32)
@@ -588,6 +660,10 @@ before2048D = time.perf_counter()
 long_plaintext_2048 = decrypt_message(private_key2048, long_ciphertext2048)
 after2048D = time.perf_counter()
 
+before3072D = time.perf_counter()
+long_plaintext_3072 = decrypt_message(private_key3072, long_ciphertext3072)
+after3072D = time.perf_counter()
+
 before7680D = time.perf_counter()
 long_plaintext_7680 = decrypt_message(private_key7680, long_ciphertext7680)
 after7680D = time.perf_counter()
@@ -599,10 +675,12 @@ after15360D = time.perf_counter()
 
 print(f"{after1024E - before1024E:0.4f} seconds for 80 Bytes RSA Encryption")
 print(f"{after2048E - before2048E:0.4f} seconds for 112 Bytes RSA Encryption")
+print(f"{after3072E - before3072E:0.4f} seconds for 128 Bytes RSA Encryption")
 print(f"{after7680E - before7680E:0.4f} seconds for 192 Bytes RSA Encryption")
 print(f"{after15360E - before15360E:0.4f} seconds for 256 Bytes RSA Encryption")
 
 print(f"{after1024D - before1024D:0.4f} seconds for 80 Bytes RSA Decryption")
 print(f"{after2048D - before2048D:0.4f} seconds for 112 Bytes RSA Decryption")
+print(f"{after3072D - before3072D:0.4f} seconds for 128 Bytes RSA Decryption")
 print(f"{after7680D - before7680D:0.4f} seconds for 192 Bytes RSA Decryption")
 print(f"{after15360D - before15360D:0.4f} seconds for 256 Bytes RSA Decryption")
